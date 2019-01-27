@@ -7,25 +7,23 @@ import pandas as pd
 encoding='utf-8-sig'
 
 # Load from Excel
-oja1 = pd.read_excel('empleadores.xlsx', sheet_name=0, encoding=encoding)
+hoja1 = pd.read_excel('empleadores.xlsx', sheet_name=0, encoding=encoding)
 hoja2 = pd.read_excel('empleadores.xlsx', sheet_name=1, encoding=encoding)
 pio = pd.read_excel('empleadores.xlsx', sheet_name=2, encoding=encoding)
 mar = pd.read_excel('empleadores.xlsx', sheet_name=3, encoding=encoding)
 
-# Title Case en headers de columa
-pio.columns = pio.columns.str.title()
-mar.columns = mar.columns.str.title()
+hojas = list()
+hojas.append(hoja1)
+hojas.append(hoja2)
+hojas.append(pio)
+hojas.append(mar)
 
-# Title Case en valores columna Empresa
-pio.Empresa = pio.Empresa.str.title()
-mar.Empresa = mar.Empresa.str.title()
-
-# Ordenar por Empresa
-hoja1 = hoja1.sort_values(by=['Empresa'])
-hoja2 = hoja2.sort_values(by=['Empresa'])
-pio   = pio.sort_values(by=['Empresa'])
-mar   = mar.sort_values(by=['Empresa'])
-
+for h in hojas:
+	h.columns = h.columns.str.title()
+	h.Empresa = h.Empresa.str.title()
+	h.Empresa = h.Empresa.str.strip()
+	h = h.sort_values(by=['Empresa'])
+	
 # No funciona aun.
 # m  = pd.merge_asof(hoja1, hoja2, on='Empresa') 
 # m2 = pd.merge_asof(m, pio, on='Empresa') 
