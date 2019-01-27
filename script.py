@@ -1,10 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 
-encoding=None
-hoja1 = pd.read_csv("csv/hoja1.csv", encoding=encoding) 
-hoja2 = pd.read_csv("csv/hoja2.csv", encoding=encoding) 
-pio   = pd.read_csv("csv/pio.csv", encoding=encoding) 
-mar   = pd.read_csv("csv/mar.csv", encoding=encoding) 
+#encoding=None
+encoding='utf-8-sig'
+
+# Load from Excel
+oja1 = pd.read_excel('empleadores.xlsx', sheet_name=0, encoding=encoding)
+hoja2 = pd.read_excel('empleadores.xlsx', sheet_name=1, encoding=encoding)
+pio = pd.read_excel('empleadores.xlsx', sheet_name=2, encoding=encoding)
+mar = pd.read_excel('empleadores.xlsx', sheet_name=3, encoding=encoding)
 
 # Title Case en headers de columa
 pio.columns = pio.columns.str.title()
