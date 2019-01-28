@@ -48,14 +48,6 @@ for h in hojas:
 	h.Empresa = h.Empresa.str.strip()
 	h = h.sort_values(by=['Empresa'])
 	
-# No funciona aun.
-# m  = pd.merge_asof(hoja1, hoja2, on='Empresa') 
-# m2 = pd.merge_asof(m, pio, on='Empresa') 
-# m3 = pd.merge_asof(m2, mar, on='Empresa') 
-
-# TODO hacer que no copie columnas iguales generando
-#      por ej columnas cuit_x, cuit_y en resultado de merge.
-
 print('Merging dataframes')
 copy = False
 sep=' | '
