@@ -3,6 +3,9 @@
 
 import pandas as pd
 
+spreadsheet_path = 'data/empleadores.xlsx'
+output_path='merge.csv'
+
 # Repeated columns
 def clean_dup_columns(df, sep=None):
 	cols = ['Clientes', 'Domicilio', 'Razon Social', 'Email', 'Teléfono', 'Cuit', 'Origen', 'Total De Empleados', 'Comentarios', 'Miembro De La Cepit']
@@ -26,10 +29,11 @@ def clean_dup_columns(df, sep=None):
 encoding='utf-8-sig'
 
 # Load from Excel
-hoja1 = pd.read_excel('empleadores.xlsx', sheet_name=0, encoding=encoding)
-hoja2 = pd.read_excel('empleadores.xlsx', sheet_name=1, encoding=encoding)
-pio = pd.read_excel('empleadores.xlsx', sheet_name=2, encoding=encoding)
-mar = pd.read_excel('empleadores.xlsx', sheet_name=3, encoding=encoding)
+print('Loading spreadsheets from ' + spreadsheet_path)
+hoja1 = pd.read_excel(spreadsheet_path, sheet_name=0, encoding=encoding)
+hoja2 = pd.read_excel(spreadsheet_path, sheet_name=1, encoding=encoding)
+pio = pd.read_excel(spreadsheet_path, sheet_name=2, encoding=encoding)
+mar = pd.read_excel(spreadsheet_path, sheet_name=3, encoding=encoding)
 
 hojas = list()
 hojas.append(hoja1)
@@ -37,6 +41,7 @@ hojas.append(hoja2)
 hojas.append(pio)
 hojas.append(mar)
 
+print('Sanitazing dataframes')
 for h in hojas:
 	h.columns = h.columns.str.title()
 	h.Empresa = h.Empresa.str.title()
@@ -51,6 +56,7 @@ for h in hojas:
 # TODO hacer que no copie columnas iguales generando
 #      por ej columnas cuit_x, cuit_y en resultado de merge.
 
+print('Merging dataframes')
 copy = False
 sep=' | '
 m  = hoja1.merge(hoja2, how='outer', on='Empresa', copy=copy)
@@ -63,5 +69,6 @@ m3 = m2.merge(mar, how='outer', on='Empresa', copy=copy)
 m3 = clean_dup_columns(m3, sep)
 
 m3 = m3.sort_values(by=['Empresa'])
-m3.to_csv(path_or_buf='merge.csv')
 
+m3.to_csv(path_or_buf=output_path)
+print('Saving merge at '+ output_path)
