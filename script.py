@@ -6,6 +6,9 @@ import pandas as pd
 spreadsheet_path = 'data/empleadores.xlsx'
 output_path='merge.csv'
 
+# cantidad de hojas a mergear. Se leen en orden, desde la primera. 
+cant_hojas = 4
+
 # Repeated columns
 def clean_dup_columns(df, sep=None):
 	cols = ['Clientes', 'Domicilio', 'Razon Social', 'Email', 'Teléfono', 'Cuit', 'Origen', 'Total De Empleados', 'Comentarios', 'Miembro De La Cepit']
@@ -15,10 +18,25 @@ def clean_dup_columns(df, sep=None):
 		if left in df.columns and right in df.columns:
 			s = pd.Series()
 			for index, row in df.iterrows():
-			# TODO skip NA values
-				if (str(row[left]) not in str(row[right]) and str(row[right]) not in str(row[left])):
-					value = str(row[left]) + sep + str(row[right])
-					s.at[index] = value
+				value_left = str(row[left]).lower() if not pd.isna(row[left]) else ''
+				value_right = str(row[right]).lower() if not pd.isna(row[left]) else ''
+
+				if (value_left == value_right):
+					value = value_left
+
+				elif (value_left not in value_right and value_right not in value_left):
+					if pd.notnull(row[left]):
+						value = value_left
+						if pd.notnull(row[right]):
+							value += sep + value_right
+					elif pd.notnull(row[right]):
+						value = value_right
+
+				else:
+					value = max([value_left, value_right], key=len)
+				
+				s.at[index] = value.title() if value != 'nan' else ''
+
 			df[c] = s
 			df = df.drop([left, right], axis=1)
 	return df
@@ -30,16 +48,10 @@ encoding='utf-8-sig'
 
 # Load from Excel
 print('Loading spreadsheets from ' + spreadsheet_path)
-hoja1 = pd.read_excel(spreadsheet_path, sheet_name=0, encoding=encoding)
-hoja2 = pd.read_excel(spreadsheet_path, sheet_name=1, encoding=encoding)
-pio = pd.read_excel(spreadsheet_path, sheet_name=2, encoding=encoding)
-mar = pd.read_excel(spreadsheet_path, sheet_name=3, encoding=encoding)
-
 hojas = list()
-hojas.append(hoja1)
-hojas.append(hoja2)
-hojas.append(pio)
-hojas.append(mar)
+for i in range(cant_hojas):
+	hojas.append(pd.read_excel(spreadsheet_path, sheet_name=i, encoding=encoding))
+
 
 print('Sanitazing dataframes')
 for h in hojas:
@@ -48,19 +60,24 @@ for h in hojas:
 	h.Empresa = h.Empresa.str.strip()
 	h = h.sort_values(by=['Empresa'])
 	
+
 print('Merging dataframes')
 copy = False
 sep=' | '
-m  = hoja1.merge(hoja2, how='outer', on='Empresa', copy=copy)
-m  = clean_dup_columns(m, sep)
+m = hojas[0]
+for i in range(cant_hojas-1):
+	m = m.merge(hojas[i+1], how='outer', on='Empresa', copy=copy)
+	m = clean_dup_columns(m, sep)
 
-m2 = m.merge(pio, how='outer', on='Empresa', copy=copy)
-m2 = clean_dup_columns(m2, sep)
 
-m3 = m2.merge(mar, how='outer', on='Empresa', copy=copy)
-m3 = clean_dup_columns(m3, sep)
+print('Sorting rows and columns')
+m = m.sort_values(by=['Empresa'])
+cols = ['Empresa', 'Razon Social', 'Cuit', 'Domicilio', 'Domicilio \nCentral/Legal', 
+ 'Titular Tandil', 'Miembro De La Cepit', 'Tenemos Afiliados?', 'Total De Empleados', 'Cantidad Empleados Tandil', 'Persona De Contacto', 'Origen', 'Tecnologias', 'Informaticos Local', 'Ubicación Sede Central', 'A Qué Se Dedica', 'Actividades', 'Sector', 'Tecnologías', 'Rango De Cobertura (Local, Nacional, Etc.)', 'Clientes', 'Fundacion', 'Teléfono', 'Tel 2', 'Email', 
+ 'Web', 'Comentarios',
+]
+m = m[cols]
 
-m3 = m3.sort_values(by=['Empresa'])
 
-m3.to_csv(path_or_buf=output_path)
 print('Saving merge at '+ output_path)
+m.to_csv(path_or_buf=output_path)
